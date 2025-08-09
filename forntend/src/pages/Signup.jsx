@@ -1,0 +1,122 @@
+import React, { useState } from "react";
+import "./Signup.css";
+import { Link } from "react-router-dom";
+import sideImage from "../assets/side.png";
+import { FcGoogle } from "react-icons/fc";
+
+const Signup = () => {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/signup/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, password }),
+      });
+
+      // Parse body safely whether ok or not
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setError(
+          result.detail || `Error ${response.status}: ${response.statusText}`
+        );
+        setTimeout(() => setError(""), 2000);
+        return;
+      }
+
+      setSuccess(`Welcome, ${result?.username || email}! Successfully signup.`);
+      setTimeout(() => setSuccess(""), 2000);
+
+      setUsername("");
+      setEmail("");
+      setPassword("");
+    } catch (err) {
+      setError(err.message || "Something went wrong.");
+      setTimeout(() => setError(""), 2000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="signup">
+      <div className="info info-2">
+        <div className="uper_info uper_info-2">
+          <h1>Welcome</h1>
+          <span>Please fill your details.</span>
+        </div>
+        <div className="form-info">
+          {/* fixed class name */}
+          <form onSubmit={handleSubmit} className="form">
+            <label htmlFor="username">Username</label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              placeholder="Enter your username"
+              required
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              placeholder="Enter your email"
+              required
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              placeholder="Enter your password"
+              required
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <div className="remember">
+              <div className="check">
+                <input type="checkbox" />
+                <span>Remember me</span>
+              </div>
+              <a href="#">Forgot password</a>
+            </div>
+            <div className="btn">
+              <button type="submit" disabled={loading} className="btn-1">
+                {loading ? "Signing..." : "Signup"}
+              </button>
+              <button type="button" className="google">
+                <FcGoogle size={24} />
+                Signup with Google
+              </button>
+            </div>
+
+            {error && <p style={{ color: "crimson" }}>{error}</p>}
+            {success && <p style={{ color: "green" }}>{success}</p>}
+            <span>
+              Already have an account? <Link to="/login">Login</Link>
+            </span>
+          </form>
+        </div>
+      </div>
+      <div className="img">
+        <img src={sideImage} alt="Side" className="img-1" />
+      </div>
+    </div>
+  );
+};
+
+export default Signup;
